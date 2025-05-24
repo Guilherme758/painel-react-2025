@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-// import './App.css'
+import './App.css'
 import axios from 'axios'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -8,6 +8,7 @@ function App() {
   const [pais, setPais] = useState([])
   const [paisesFiltrados, setPaisesFiltrados] = useState([])
 
+  // Faz a requisição na API
   useEffect(() => {
     axios.get('https://restcountries.com/v3.1/all')
     .then(resposta => {
@@ -21,7 +22,8 @@ function App() {
                 "population": item.population,
                 "area": item.area,
                 "languages": item.languages,
-                "continents": item.continents
+                "continents": item.continents,
+                "flag": item.flags && item.flags.svg
         };
       })
       setPaises(data)
@@ -29,9 +31,12 @@ function App() {
     })
   }, [])
 
+// Bloco responsavel por filtrar os Paises por continente
   return (
-    <div className='container-sm'>
-      <div id="div-filtros">
+    <div id="div-principal" className='container mt-4 mb-4'>
+
+      {/* Bloco responsavel por exibir botões de filtro de continentes */}
+      <div id="div-filtros" className="overflow-auto d-flex flex-wrap justify-content-center gap-3 mt-3">
         {pais == undefined ? 
         <>
           <button type='button' className='btn btn-primary' onClick={() => {
@@ -60,11 +65,13 @@ function App() {
             }))
           }}>Oceania</button>
           <button type='button' className='btn btn-primary' onClick={() => {
-             setPaisesFiltrados([])
+             setPaisesFiltrados(paises)
           }}>Todos</button>
         </>: <></>}</div>
-      <div id="div-paises" className='overflow-auto'>
-        {pais == undefined && paisesFiltrados.length == 0 ? paises.map(pais => {
+
+      {/* Bloco responsavel por exibir botões de todos os países que vierem na API */}
+      <div id="div-paises" className='overflow-auto d-flex flex-wrap justify-content-center gap-3 mt-3'>
+                {pais == undefined && paisesFiltrados.length == 0 ? paises.map(pais => {
         return (
           <div key={pais.name} className='pais'>
             <button type="button" className='btn btn-dark' onClick={() => setPais(pais)}>{pais.name}</button>
@@ -73,27 +80,45 @@ function App() {
       })
       : <></>}
       </div>
-      <div id="div-paises" className='overflow-auto'>
-        {pais == undefined && paisesFiltrados.length > 0 ? paisesFiltrados.map(pais => {
-        return (
+
+      {/* Bloco responsavel por exibir botões dos países de acordo com filtro de continente */}
+      <div id="div-paises-filtrados" className='overflow-auto d-flex flex-wrap justify-content-center gap-3 mt-3'>
+        {pais === undefined && paisesFiltrados.length > 0 && ( 
+                    paisesFiltrados.map(pais => (
           <div key={pais.name} className='pais'>
             <button type="button" className='btn btn-dark' onClick={() => setPais(pais)}>{pais.name}</button>
           </div>
-        )
-      })
-      : <></>}
+        ))
+      )}
+      <></>
       </div>
+
+      {/* Bloco responsavel pela listagem das informaçoes do país que for selecionado */}
       <div id="dados-pais">
           {pais != undefined ? 
             <>
-              <p>Nome: {pais.name}</p>
-              <p>Nome Oficial: {pais.official_name}</p>
-              <p>Começo da Semana: {pais.start_week}</p>
-              <p>Capital: {pais.capital}</p>
-              <p>População: {pais.population}</p>
-              <p>Área: {pais.area} m²</p>
-              {/* <p>Linguas: {JSON.stringify(pais.languages)}</p> */}
-              <p>Continentes: {pais.continents}</p>
+               <p>
+                  {pais.flag && (
+                    <div className='text-top container mt-4 mb-4'>
+                      <img src={pais.flag} style={{maxWidth: '100px', width: '100%', height: 'auto'}} />
+                      </div>
+                  )}
+                
+              </p>
+              <ul className="info-paises"> 
+                <li className="list-group-item"><strong>Nome:</strong> {pais.name}</li>
+                <li className="list-group-item"><strong>Nome Oficial:</strong> {pais.official_name}</li>
+                <li className="list-group-item"><strong>Começo da Semana:</strong> {pais.start_week}</li>
+                <li className="list-group-item"><strong>Capital:</strong> {pais.capital}</li>
+                <li className="list-group-item"><strong>População:</strong> {pais.population}</li>
+                <li className="list-group-item"><strong>Área:</strong> {pais.area} m²</li>
+                <li className="list-group-item"><strong>Continentes:</strong> {pais.continents}</li>
+                  {pais.languages && (
+                    <li className="list-group-item">
+                    <strong>Idiomas:</strong> {Object.values(pais.languages).join(', ')}
+                  </li>)}   
+                    </ul>
+
               <button type="button" className='btn btn-dark' onClick={() => setPais(undefined)}>Voltar</button>
             </>: <></>}
       </div>
